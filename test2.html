@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Leaflet Multiple PNG Overlays + Search</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <style>
+    body { margin: 0; }
+    #map { height: 100vh; width: 100vw; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+  <script>
+    const map = L.map('map').setView([49.17, -123.1], 11);
+
+    // --- Base layers ---
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '© Esri — World Imagery'
+    });
+
+    const carto = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '© CartoDB'
+    });
+
+    const baseMaps = {
+      "OpenStreetMap": osm,
+      "ESRI Satellite": esri,
+      "Carto Light": carto
+    };
+
+    // --- Image bounds ---
+    const imageBounds = [
+      [49.08797285875414, -123.2748976943509], // southwest
+      [49.26209794841518, -122.95690768066221]  // northeast
+    ];
+
+    // --- File names ---
+    const overlayFiles = [
+      'connected_0m_output_cog_clipped_4326.png',  
+      'connected_0_5m_output_clipped_4326.png',
+      'connected_1m_output_cog_clipped_4326.png',
+      'connected_1_5m_output_cog_clipped_4326.png',
+      'connected_2m_output_cog_clipped_4326.png',
+      'connected_2_5m_output_clipped_4326.png',
+      'connected_3m_output_clipped_4326.png',
+      'connected_3_5m_output_clipped_4326.png',
+      'connected_4m_output_clipped_4326.png',
+      'connected_4_5m_output_clipped_4326.png',
+      'connected_5m_output_clipped_4326.png'
+    ];
+
+    // --- Friendly labels ---
+    const labelMap = {
+      'connected_0m_output_cog_clipped_4326.png': 'Sea level rise by 0m',
+      'connected_0_5m_output_clipped_4326.png': 'Sea level rise by 0.5m',
+      'connected_1m_output_cog_clipped_4326.png': 'Sea level rise by 1m',
+      'connected_1_5m_output_cog_clipped_4326.png': 'Sea level rise by 1.5m',
+      'connected_2m_output_cog_clipped_4326.png': 'Sea level rise by 2m',
+      'connected_2_5m_output_clipped_4326.png': 'Sea level rise by 2.5m',
+      'connected_3m_output_clipped_4326.png': 'Sea level rise by 3m',
+      'connected_3_5m_output_clipped_4326.png': 'Sea level rise by 3.5m',
+      'connected_4m_output_clipped_4326.png': 'Sea level rise by 4m',
+      'connected_4_5m_output_clipped_4326.png': 'Sea level rise by 4.5m',
+      'connected_5m_output_clipped_4326.png': 'Sea level rise by 5m'
+    };
+
+    // --- Overlays ---
+    const overlayMaps = {};
+    overlayFiles.forEach(filename => {
+      const label = labelMap[filename] || filename;
+      const layer = L.imageOverlay(filename, imageBounds, { opacity: 1 });
+      overlayMaps[label] = layer;
+
+      if (filename === 'connected_0_5m_output_clipped_4326.png') {
+        layer.addTo(map); // Set default visible overlay
+      }
+    });
+
+    // --- Controls ---
+    L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+    // --- Add geocoder search bar ---
+    L.Control.geocoder({
+      defaultMarkGeocode: true
+    }).addTo(map);
+  </script>
+</body>
+</html>
